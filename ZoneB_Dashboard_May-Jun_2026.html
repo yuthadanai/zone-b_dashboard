@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zone B — Financial Dashboard พ.ค.–มิ.ย. 2569</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f5f6fa; color: #1a1a2e; padding: 24px; }
+
+  .header { margin-bottom: 22px; }
+  .header h1 { font-size: 20px; font-weight: 700; color: #1a1a2e; }
+  .header p { font-size: 12px; color: #888; margin-top: 3px; }
+
+  .tabs { display: flex; gap: 8px; margin-bottom: 18px; }
+  .tab { padding: 7px 20px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
+  .tab.active { background: #2563eb; color: #fff; }
+  .tab:not(.active) { background: #fff; color: #666; border-color: #e2e8f0; }
+  .tab:not(.active):hover { border-color: #2563eb; color: #2563eb; }
+
+  .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .card { background: #fff; border-radius: 10px; padding: 14px 16px; border-left: 4px solid; }
+  .card.opening { border-color: #6366f1; }
+  .card.income  { border-color: #10b981; }
+  .card.expense { border-color: #ef4444; }
+  .card.closing { border-color: #2563eb; }
+  .card-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: #888; margin-bottom: 5px; }
+  .card-value { font-size: 22px; font-weight: 700; }
+  .card.opening .card-value { color: #6366f1; }
+  .card.income  .card-value { color: #10b981; }
+  .card.expense .card-value { color: #ef4444; }
+  .card.closing .card-value { color: #2563eb; }
+  .card-sub { font-size: 11px; color: #aaa; margin-top: 3px; }
+
+  .charts-row { display: grid; grid-template-columns: 2fr 1fr; gap: 14px; margin-bottom: 20px; }
+  .chart-box { background: #fff; border-radius: 10px; padding: 16px; }
+  .chart-title { font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 14px; }
+  .chart-wrap { position: relative; height: 200px; width: 100%; }
+
+  .table-box { background: #fff; border-radius: 10px; padding: 16px; }
+  .table-title { font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; padding: 7px 10px; background: #f8f9fb; color: #888; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; }
+  td { padding: 8px 10px; border-bottom: 1px solid #f0f1f5; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafbff; }
+  .badge { display: inline-block; padding: 2px 9px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .badge-in  { background: #d1fae5; color: #065f46; }
+  .badge-out { background: #fee2e2; color: #991b1b; }
+  .amount-in  { color: #10b981; font-weight: 600; }
+  .amount-out { color: #ef4444; font-weight: 600; }
+  .text-right { text-align: right; }
+
+  @media (max-width: 700px) {
+    .cards { grid-template-columns: repeat(2, 1fr); }
+    .charts-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🏘️ Zone B Muangthong — Financial Dashboard</h1>
+  <p>พฤษภาคม – มิถุนายน 2569 &nbsp;|&nbsp; ยอดคงเหลือ &amp; กิจกรรมทางการเงิน</p>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchMonth('may', this)">พ.ค. 2569 (May)</div>
+  <div class="tab" onclick="switchMonth('jun', this)">มิ.ย. 2569 (June)</div>
+  <div class="tab" onclick="switchMonth('both', this)">ภาพรวม (Overview)</div>
+</div>
+
+<!-- MAY -->
+<div id="content-may" class="month-content">
+  <div class="cards">
+    <div class="card opening"><div class="card-label">Opening Balance</div><div class="card-value">฿560,397</div><div class="card-sub">30 เม.ย. 2569</div></div>
+    <div class="card income"><div class="card-label">Total Income</div><div class="card-value">+฿7,900</div><div class="card-sub">10 รายการ</div></div>
+    <div class="card expense"><div class="card-label">Total Expenses</div><div class="card-value">-฿7,417</div><div class="card-sub">2 รายการ</div></div>
+    <div class="card closing"><div class="card-label">Closing Balance</div><div class="card-value">฿560,881</div><div class="card-sub">29 พ.ค. 2569</div></div>
+  </div>
+  <div class="charts-row">
+    <div class="chart-box">
+      <div class="chart-title">Balance Trend — May</div>
+      <div class="chart-wrap"><canvas id="chartMayLine"></canvas></div>
+    </div>
+    <div class="chart-box">
+      <div class="chart-title">Income vs Expense</div>
+      <div class="chart-wrap"><canvas id="chartMayDonut"></canvas></div>
+    </div>
+  </div>
+  <div class="table-box">
+    <div class="table-title">Transactions — May 2026</div>
+    <table>
+      <thead><tr><th>วันที่</th><th>รายการ</th><th>ประเภท</th><th class="text-right">จำนวนเงิน (฿)</th><th class="text-right">คงเหลือ (฿)</th></tr></thead>
+      <tbody id="tbody-may"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- JUNE -->
+<div id="content-jun" class="month-content" style="display:none">
+  <div class="cards">
+    <div class="card opening"><div class="card-label">Opening Balance</div><div class="card-value">฿560,881</div><div class="card-sub">29 พ.ค. 2569</div></div>
+    <div class="card income"><div class="card-label">Total Income</div><div class="card-value">+฿19,655</div><div class="card-sub">11 รายการ</div></div>
+    <div class="card expense"><div class="card-label">Total Expenses</div><div class="card-value">-฿7,295</div><div class="card-sub">2 รายการ</div></div>
+    <div class="card closing"><div class="card-label">Closing Balance</div><div class="card-value">฿573,240</div><div class="card-sub">30 มิ.ย. 2569</div></div>
+  </div>
+  <div class="charts-row">
+    <div class="chart-box">
+      <div class="chart-title">Balance Trend — June</div>
+      <div class="chart-wrap"><canvas id="chartJunLine"></canvas></div>
+    </div>
+    <div class="chart-box">
+      <div class="chart-title">Income vs Expense</div>
+      <div class="chart-wrap"><canvas id="chartJunDonut"></canvas></div>
+    </div>
+  </div>
+  <div class="table-box">
+    <div class="table-title">Transactions — June 2026</div>
+    <table>
+      <thead><tr><th>วันที่</th><th>รายการ</th><th>ประเภท</th><th class="text-right">จำนวนเงิน (฿)</th><th class="text-right">คงเหลือ (฿)</th></tr></thead>
+      <tbody id="tbody-jun"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- OVERVIEW -->
+<div id="content-both" class="month-content" style="display:none">
+  <div class="cards">
+    <div class="card opening"><div class="card-label">May Opening</div><div class="card-value">฿560,397</div><div class="card-sub">30 เม.ย. 2569</div></div>
+    <div class="card income"><div class="card-label">Total Income (2 เดือน)</div><div class="card-value">+฿27,555</div><div class="card-sub">21 รายการ</div></div>
+    <div class="card expense"><div class="card-label">Total Expenses (2 เดือน)</div><div class="card-value">-฿14,712</div><div class="card-sub">4 รายการ</div></div>
+    <div class="card closing"><div class="card-label">Jun Closing</div><div class="card-value">฿573,240</div><div class="card-sub">30 มิ.ย. 2569</div></div>
+  </div>
+  <div class="chart-box" style="margin-bottom:14px">
+    <div class="chart-title">Balance Trend — May &amp; June Combined</div>
+    <div class="chart-wrap"><canvas id="chartBothLine"></canvas></div>
+  </div>
+  <div class="charts-row">
+    <div class="chart-box">
+      <div class="chart-title">Monthly Income vs Expense</div>
+      <div class="chart-wrap"><canvas id="chartCompare"></canvas></div>
+    </div>
+    <div class="chart-box">
+      <div class="chart-title">Net Flow</div>
+      <div class="chart-wrap"><canvas id="chartNet"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const fmt = n => n.toLocaleString('th-TH', {minimumFractionDigits:2, maximumFractionDigits:2});
+
+const mayTxns = [
+  {date:'2 พ.ค.',  desc:'ค่าส่วนกลาง 50/572 พ.ค-มิ.ย.',        type:'in',  amt:500.00,   bal:560897.42},
+  {date:'3 พ.ค.',  desc:'ค่าส่วนกลาง 50/1155 ม.ค.-ก.พ.',        type:'in',  amt:500.00,   bal:561397.42},
+  {date:'5 พ.ค.',  desc:'ค่าไฟ',                                  type:'out', amt:4775.86,  bal:556621.56},
+  {date:'7 พ.ค.',  desc:'โจ 2,000 / เนท 640.93 (เม.ย.)',         type:'out', amt:2640.93,  bal:553980.63},
+  {date:'8 พ.ค.',  desc:'คาร์แคร์ มี.ค.-เม.ย.',                  type:'in',  amt:1000.00,  bal:554980.63},
+  {date:'8 พ.ค.',  desc:'ตลาดธนทรัพย์ มี.ค.-เม.ย.',              type:'in',  amt:1000.00,  bal:555980.63},
+  {date:'12 พ.ค.', desc:'ค่าส่วนกลาง 50/726 เม.ย.',              type:'in',  amt:250.00,   bal:556230.63},
+  {date:'15 พ.ค.', desc:'ค่าส่วนกลาง ขนมบ้านอัยการ พ.ค.',        type:'in',  amt:500.00,   bal:556730.63},
+  {date:'24 พ.ค.', desc:'ค่าส่วนกลาง 50/730 พ.ค-ธ.ค.',          type:'in',  amt:2000.00,  bal:558730.63},
+  {date:'27 พ.ค.', desc:'ค่าส่วนกลาง 50/532, 601, 602, 632',     type:'in',  amt:1150.00,  bal:559880.63},
+  {date:'29 พ.ค.', desc:'ค่าส่วนกลาง 50/508 พ.ค.',               type:'in',  amt:500.00,   bal:560380.63},
+  {date:'29 พ.ค.', desc:'ค่าส่วนกลาง 50/739 พ.ค.',               type:'in',  amt:500.00,   bal:560880.63},
+];
+
+const junTxns = [
+  {date:'4 มิ.ย.',  desc:'ค่าไฟ',                                  type:'out', amt:4654.40,  bal:556226.23},
+  {date:'4 มิ.ย.',  desc:'ค่าส่วนกลาง แม่ลาปลาเผา ปี 69',          type:'in',  amt:6000.00,  bal:562226.23},
+  {date:'4 มิ.ย.',  desc:'ค่าส่วนกลาง 50/726 มิ.ย.',               type:'in',  amt:250.00,   bal:562476.23},
+  {date:'5 มิ.ย.',  desc:'โจ 2,000 / เนท 640.93 (พ.ต.)',           type:'out', amt:2640.93,  bal:559835.30},
+  {date:'7 มิ.ย.',  desc:'ค่าส่วนกลาง 50/539 ก.ค.-ธ.ค.',           type:'in',  amt:1200.00,  bal:561035.30},
+  {date:'9 มิ.ย.',  desc:'ค่าส่วนกลาง Moka Mania ก.ค.-ธ.ค.',       type:'in',  amt:2000.00,  bal:563035.30},
+  {date:'15 มิ.ย.', desc:'ค่าส่วนกลาง Besy Express ม.ค.-มิ.ย.',    type:'in',  amt:3000.00,  bal:566035.30},
+  {date:'15 มิ.ย.', desc:'ค่าส่วนกลาง ขนมบ้านอัยการ มิ.ย.',         type:'in',  amt:500.00,   bal:566535.30},
+  {date:'27 มิ.ย.', desc:'ค่าส่วนกลาง 50/535-556 ก.ค.-ธ.ค.',       type:'in',  amt:3000.00,  bal:569535.30},
+  {date:'28 มิ.ย.', desc:'ค่าส่วนกลางรัชน์ขนมจีน พ.ค.-ส.ค.',        type:'in',  amt:2000.00,  bal:571535.30},
+  {date:'30 มิ.ย.', desc:'ค่าส่วนกลาง 50/508 มิ.ย.',               type:'in',  amt:500.00,   bal:572035.30},
+  {date:'30 มิ.ย.', desc:'โอนเข้า (ยังไม่ระบุ)',                    type:'in',  amt:500.00,   bal:572535.30},
+  {date:'30 มิ.ย.', desc:'ดอกเบี้ย',                                type:'in',  amt:704.57,   bal:573239.87},
+];
+
+function buildTable(tbodyId, txns) {
+  const tbody = document.getElementById(tbodyId);
+  txns.forEach(t => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${t.date}</td>
+      <td>${t.desc}</td>
+      <td><span class="badge badge-${t.type}">${t.type==='in'?'รายรับ':'รายจ่าย'}</span></td>
+      <td class="text-right ${t.type==='in'?'amount-in':'amount-out'}">${t.type==='in'?'+':'-'}${fmt(t.amt)}</td>
+      <td class="text-right">${fmt(t.bal)}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+buildTable('tbody-may', mayTxns);
+buildTable('tbody-jun', junTxns);
+
+function lineChart(id, labels, data, color) {
+  new Chart(document.getElementById(id).getContext('2d'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data, fill: true,
+        borderColor: color,
+        backgroundColor: color + '18',
+        borderWidth: 2,
+        pointRadius: 3,
+        pointBackgroundColor: color,
+        tension: 0.3
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+        y: { grid: { color: '#f0f0f0' }, ticks: { font: { size: 10 }, callback: v => '฿'+(v/1000).toFixed(0)+'k' } }
+      }
+    }
+  });
+}
+
+function donutChart(id, income, expense) {
+  new Chart(document.getElementById(id).getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: ['รายรับ', 'รายจ่าย'],
+      datasets: [{ data: [income, expense], backgroundColor: ['#10b981','#ef4444'], borderWidth: 2, borderColor: '#fff' }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 8 } },
+        tooltip: { callbacks: { label: ctx => ' ฿' + fmt(ctx.parsed) } }
+      },
+      cutout: '60%'
+    }
+  });
+}
+
+lineChart('chartMayLine',
+  ['30/4','2/5','3/5','5/5','7/5','8/5','8/5','12/5','15/5','24/5','27/5','29/5','29/5'],
+  [560397.42,560897.42,561397.42,556621.56,553980.63,554980.63,555980.63,556230.63,556730.63,558730.63,559880.63,560380.63,560880.63],
+  '#6366f1'
+);
+donutChart('chartMayDonut', 7900, 7416.79);
+
+lineChart('chartJunLine',
+  ['29/5','4/6','4/6','4/6','5/6','7/6','9/6','15/6','15/6','27/6','28/6','30/6','30/6','30/6'],
+  [560880.63,556226.23,562226.23,562476.23,559835.30,561035.30,563035.30,566035.30,566535.30,569535.30,571535.30,572035.30,572535.30,573239.87],
+  '#2563eb'
+);
+donutChart('chartJunDonut', 19654.57, 7295.33);
+
+lineChart('chartBothLine',
+  ['30/4','2/5','3/5','5/5','7/5','8/5','8/5','12/5','15/5','24/5','27/5','29/5','29/5','4/6','4/6','4/6','5/6','7/6','9/6','15/6','15/6','27/6','28/6','30/6','30/6','30/6'],
+  [560397.42,560897.42,561397.42,556621.56,553980.63,554980.63,555980.63,556230.63,556730.63,558730.63,559880.63,560380.63,560880.63,556226.23,562226.23,562476.23,559835.30,561035.30,563035.30,566035.30,566535.30,569535.30,571535.30,572035.30,572535.30,573239.87],
+  '#2563eb'
+);
+
+new Chart(document.getElementById('chartCompare').getContext('2d'), {
+  type: 'bar',
+  data: {
+    labels: ['พ.ค. 2569','มิ.ย. 2569'],
+    datasets: [
+      { label: 'รายรับ', data: [7900, 19654.57], backgroundColor: '#10b981' },
+      { label: 'รายจ่าย', data: [7416.79, 7295.33], backgroundColor: '#ef4444' }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 8 } } },
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+      y: { grid: { color: '#f0f0f0' }, ticks: { font: { size: 10 }, callback: v => '฿'+(v/1000).toFixed(0)+'k' } }
+    }
+  }
+});
+
+new Chart(document.getElementById('chartNet').getContext('2d'), {
+  type: 'bar',
+  data: {
+    labels: ['พ.ค. 2569','มิ.ย. 2569'],
+    datasets: [{ label: 'Net Flow', data: [483.21, 12359.24], backgroundColor: ['#6366f1','#2563eb'] }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+      y: { grid: { color: '#f0f0f0' }, ticks: { font: { size: 10 }, callback: v => '+฿'+(v/1000).toFixed(1)+'k' } }
+    }
+  }
+});
+
+function switchMonth(m, el) {
+  document.querySelectorAll('.month-content').forEach(e => e.style.display='none');
+  document.querySelectorAll('.tab').forEach(e => e.classList.remove('active'));
+  document.getElementById('content-'+m).style.display='';
+  el.classList.add('active');
+}
+</script>
+</body>
+</html>
